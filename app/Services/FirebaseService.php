@@ -23,7 +23,7 @@ class FirebaseService
     public function getMonitoringData(): ?array
     {
         try {
-            $url = self::getDatabaseUrl() . '/monitoring.json';
+            $url = self::getDatabaseUrl().'/monitoring.json';
             $response = Http::withoutVerifying()->timeout(5)->get($url);
 
             if ($response->successful()) {
@@ -32,7 +32,7 @@ class FirebaseService
 
             Log::warning('Firebase fetch failed', ['status' => $response->status(), 'body' => $response->body()]);
         } catch (\Throwable $e) {
-            Log::error('Firebase connection error: ' . $e->getMessage());
+            Log::error('Firebase connection error: '.$e->getMessage());
         }
 
         return null;
@@ -46,27 +46,27 @@ class FirebaseService
         $defaults = [
             'air_temp_min' => 21.0,
             'air_temp_max' => 30.0,
-            'air_hum_min'  => 60.0,
-            'air_hum_max'  => 80.0,
-            'lux_min'      => 10000.0,
-            'lux_max'      => 20000.0,
-            'n_min'        => 100,
-            'n_max'        => 200,
-            'p_min'        => 50,
-            'p_max'        => 100,
-            'k_min'        => 100,
-            'k_max'        => 200,
+            'air_hum_min' => 60.0,
+            'air_hum_max' => 80.0,
+            'lux_min' => 10000.0,
+            'lux_max' => 20000.0,
+            'n_min' => 100,
+            'n_max' => 200,
+            'p_min' => 50,
+            'p_max' => 100,
+            'k_min' => 100,
+            'k_max' => 200,
         ];
 
         try {
-            $url = self::getDatabaseUrl() . '/thresholds.json';
+            $url = self::getDatabaseUrl().'/thresholds.json';
             $response = Http::withoutVerifying()->timeout(5)->get($url);
 
             if ($response->successful() && is_array($response->json())) {
                 return array_merge($defaults, $response->json());
             }
         } catch (\Throwable $e) {
-            Log::error('Firebase thresholds fetch error: ' . $e->getMessage());
+            Log::error('Firebase thresholds fetch error: '.$e->getMessage());
         }
 
         return $defaults;
@@ -78,12 +78,68 @@ class FirebaseService
     public function updateThresholds(array $data): bool
     {
         try {
-            $url = self::getDatabaseUrl() . '/thresholds.json';
+            $url = self::getDatabaseUrl().'/thresholds.json';
             $response = Http::withoutVerifying()->timeout(5)->put($url, $data);
 
             return $response->successful();
         } catch (\Throwable $e) {
-            Log::error('Firebase thresholds update error: ' . $e->getMessage());
+            Log::error('Firebase thresholds update error: '.$e->getMessage());
+
+            return false;
+        }
+    }
+
+    /**
+     * Fetch device control state (start/stop monitoring, manual watering) from Firebase.
+     */
+    public function getControl(): array
+    {
+        $defaults = ['sensor_on' => 1, 'auto_water' => 0, 'pump_seq' => 0, 'pump_duration' => 5];
+
+        try {
+            $url = self::getDatabaseUrl().'/control.json';
+            $response = Http::withoutVerifying()->timeout(5)->get($url);
+
+            if ($response->successful() && is_array($response->json())) {
+                return array_merge($defaults, $response->json());
+            }
+        } catch (\Throwable $e) {
+            Log::error('Firebase control fetch error: '.$e->getMessage());
+        }
+
+        return $defaults;
+    }
+
+    /**
+     * Turn sensor monitoring on/off on the device (via Firebase).
+     */
+    public function setSensorOn(bool $on): bool
+    {
+        try {
+            $url = self::getDatabaseUrl().'/control/sensor_on.json';
+            $response = Http::withoutVerifying()->timeout(5)->put($url, $on ? 1 : 0);
+
+            return $response->successful();
+        } catch (\Throwable $e) {
+            Log::error('Firebase control update error: '.$e->getMessage());
+
+            return false;
+        }
+    }
+
+    /**
+     * Turn automatic watering on/off on the device (via Firebase).
+     */
+    public function setAutoWater(bool $on): bool
+    {
+        try {
+            $url = self::getDatabaseUrl().'/control/auto_water.json';
+            $response = Http::withoutVerifying()->timeout(5)->put($url, $on ? 1 : 0);
+
+            return $response->successful();
+        } catch (\Throwable $e) {
+            Log::error('Firebase auto water update error: '.$e->getMessage());
+
             return false;
         }
     }
@@ -94,11 +150,11 @@ class FirebaseService
     public function recordSnapshot(?int $sensorId = null): ?Pengukuran
     {
         $data = $this->getMonitoringData();
-        if (!$data || !isset($data['suhu_udara'])) {
+        if (! $data || ! isset($data['suhu_udara'])) {
             return null;
         }
 
-        if (!$sensorId) {
+        if (! $sensorId) {
             $sensor = Sensor::first();
             $sensorId = $sensor ? $sensor->id : 1;
         }
@@ -108,6 +164,7 @@ class FirebaseService
             'recorded_at' => now(),
             'temperature_c' => $data['suhu_udara'] ?? 0,
             'humidity_pct' => $data['lembap_udara'] ?? 0,
+            'lux' => $data['lux'] ?? $data['cahaya'] ?? null,
             'soil_moisture_pct' => $data['lembap_tanah'] ?? null,
             'soil_temperature_c' => $data['suhu_tanah'] ?? null,
             'soil_ec' => $data['ec'] ?? null,

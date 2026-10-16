@@ -1,4 +1,4 @@
-<div x-data="firebaseRealtime('{{ $firebaseUrl }}', {{ json_encode($monitoring) }}, {{ json_encode($thresholds) }})"
+<div x-data="firebaseRealtime('{{ $firebaseUrl }}', {{ json_encode($monitoring) }}, {{ json_encode($thresholds) }}, {{ json_encode($control) }})"
     x-init="init()" class="space-y-6">
     {{-- Header & Connection Bar --}}
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -22,6 +22,54 @@
             </div>
         </div>
     </div>
+
+    {{-- Kontrol Perangkat: Start/Stop Monitoring & Siram Manual --}}
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {{-- Start / Stop Monitoring --}}
+        <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Monitoring Sensor</span>
+                <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="ctrl.sensor_on == 1
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
+                        : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300'"
+                    x-text="ctrl.sensor_on == 1 ? 'Aktif' : 'Nonaktif'"></span>
+            </div>
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+                <flux:button wire:click="startMonitoring" icon="play" variant="primary" size="sm"
+                    class="shrink-0 whitespace-nowrap" :disabled="$control['sensor_on'] == 1">Mulai Monitoring</flux:button>
+                <flux:button wire:click="stopMonitoring" icon="stop" variant="danger" size="sm"
+                    class="shrink-0 whitespace-nowrap" :disabled="$control['sensor_on'] == 0">Hentikan</flux:button>
+            </div>
+            <div class="mt-2 text-xs text-zinc-400">Saat nonaktif, alat berhenti membaca &amp; mengirim data, dan
+                riwayat otomatis tidak disimpan.</div>
+        </div>
+
+        {{-- Penyiraman Otomatis --}}
+        <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Penyiraman Otomatis</span>
+                <span class="rounded-full px-2 py-0.5 text-xs font-medium" :class="ctrl.auto_water == 1
+                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
+                        : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300'"
+                    x-text="ctrl.auto_water == 1 ? 'Aktif' : 'Nonaktif'"></span>
+            </div>
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+                <flux:button wire:click="startAutoWater" icon="play" variant="primary" size="sm"
+                    class="shrink-0 whitespace-nowrap" :disabled="$control['auto_water'] == 1">Nyalakan Otomatis</flux:button>
+                <flux:button wire:click="stopAutoWater" icon="stop" variant="danger" size="sm"
+                    class="shrink-0 whitespace-nowrap" :disabled="$control['auto_water'] == 0">Matikan Otomatis</flux:button>
+            </div>
+            <div class="mt-2 text-xs text-zinc-400">Saat aktif, alat menyiram sendiri ketika tanah kering. Saat
+                nonaktif, alat tidak akan menyiram sendiri (aman bila sedang ada orang di sekitar tanaman).</div>
+        </div>
+    </div>
+
+    @if ($controlMessage)
+        <div
+            class="rounded-xl border p-4 text-sm font-medium {{ str_starts_with($controlMessage, 'Gagal') ? 'border-rose-500/30 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400' : 'border-emerald-500/30 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' }}">
+            {{ $controlMessage }}
+        </div>
+    @endif
 
     {{-- Status Banner: Pompa & Kondisi Lahan --}}
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -196,7 +244,7 @@
                 <div class="mt-2 flex items-baseline gap-1">
                     <span class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100"
                         x-text="data.ec || 0"></span>
-                    <span class="text-xs text-zinc-500">µs/cm</span>
+                    <span class="text-xs text-zinc-500">µS/cm</span>
                 </div>
                 <div class="mt-2 text-[11px] text-zinc-400">Konsentrasi ion hara</div>
             </div>
@@ -297,7 +345,7 @@
 </div>
 
 <script>
-    function firebaseRealtime(url, initialData, initialThresholds) {
+    function firebaseRealtime(url, initialData, initialThresholds, initialControl) {
         return {
             url: url.replace(/\/$/, ''),
             data: initialData || {},
@@ -314,6 +362,12 @@
                 p_max: 100,
                 k_min: 100,
                 k_max: 200
+            },
+            ctrl: initialControl || {
+                sensor_on: 1,
+                auto_water: 0,
+                pump_seq: 0,
+                pump_duration: 5
             },
             connected: false,
             lastUpdateText: 'Memuat...',
@@ -382,6 +436,18 @@
                         const thJson = await thRes.json();
                         if (thJson) {
                             this.th = Object.assign({}, this.th, thJson);
+                        }
+                    }
+                } catch (e) { }
+
+                try {
+                    const cRes = await fetch(`${this.url}/control.json`, {
+                        cache: 'no-store'
+                    });
+                    if (cRes.ok) {
+                        const cJson = await cRes.json();
+                        if (cJson) {
+                            this.ctrl = Object.assign({}, this.ctrl, cJson);
                         }
                     }
                 } catch (e) { }

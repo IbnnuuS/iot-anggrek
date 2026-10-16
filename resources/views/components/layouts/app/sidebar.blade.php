@@ -18,6 +18,9 @@
                     <flux:sidebar.item icon="adjustments-horizontal" :href="route('thresholds')" :current="request()->routeIs('thresholds')" wire:navigate>
                         {{ __('Threshold Sensor') }}
                     </flux:sidebar.item>
+                    <flux:sidebar.item icon="clock" :href="route('riwayat.index')" :current="request()->routeIs('riwayat.*')" wire:navigate>
+                        {{ __('Riwayat Monitoring') }}
+                    </flux:sidebar.item>
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

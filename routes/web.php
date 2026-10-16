@@ -28,10 +28,9 @@ Route::middleware(['auth', 'verified'])->prefix('anggrek')->name('anggrek.')->gr
     Route::get('/{anggrek}/edit', \App\Livewire\Anggrek\Edit::class)->name('edit');
 });
 
-// Pengukuran (Measurements) Routes  
-Route::middleware(['auth', 'verified'])->prefix('pengukuran')->name('pengukuran.')->group(function () {
+// Pengukuran (Measurements) Routes
+Route::middleware(['auth', 'verified'])->prefix('riwayat')->name('riwayat.')->group(function () {
     Route::get('/', \App\Livewire\Pengukuran\Index::class)->name('index');
-    Route::get('/{pengukuran}', \App\Livewire\Pengukuran\Detail::class)->name('detail');
 });
 
 require __DIR__.'/settings.php';

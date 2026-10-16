@@ -382,6 +382,8 @@ php artisan serve
 
 Aplikasi dapat diakses melalui browser pada `http://127.0.0.1:8000`.
 
+**Windows — cara praktis:** dobel-klik `jalankan.bat`. Skrip ini menjalankan dua proses sekaligus: web (`php artisan serve`) dan riwayat otomatis (`php artisan schedule:work`). Tidak perlu Task Scheduler Windows, cron, atau pengaturan tambahan di komputer mana pun.
+
 ### 7.3. Akun Pengujian Bawaan Seeder
 | Nama Pengguna | Alamat Email | Kata Sandi | Status Verifikasi |
 |---|---|---|---|
@@ -392,6 +394,16 @@ Aplikasi dapat diakses melalui browser pada `http://127.0.0.1:8000`.
 ---
 
 ## 8. Perintah CLI Tambahan
+
+### Riwayat Monitoring Otomatis (Penjadwal Internal)
+Riwayat disimpan otomatis tiap **10 menit** oleh penjadwal internal Laravel. Penjadwal ini berjalan sebagai bagian dari aplikasi (tanpa penjadwalan sistem operasi):
+
+```bash
+# Biarkan proses ini berjalan selama monitoring (sudah otomatis lewat jalankan.bat)
+php artisan schedule:work
+```
+
+Tanpa proses ini riwayat tidak tersimpan otomatis; penyimpanan manual dapat dilakukan kapan saja lewat perintah `firebase:sync` di bawah.
 
 ### Sinkronisasi Snapshot Telemetri dari Firebase
 Untuk menarik data pengamatan terkini langsung dari Firebase Realtime Database dan menyimpannya ke tabel database lokal:
