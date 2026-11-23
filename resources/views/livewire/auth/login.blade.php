@@ -1,59 +1,53 @@
-<x-layouts.auth>
-    <div class="flex flex-col gap-6">
-        <x-auth-header :title="__('Log in to your account')" :description="__('Enter your email and password below to log in')" />
+<x-layouts.auth.kiln title="Masuk">
+    <div>
+        <h1 class="auth-title">Masuk</h1>
+        <p class="auth-sub">Gunakan email dan kata sandi akun Anda untuk melihat kondisi area tanam.</p>
+    </div>
 
-        <!-- Session Status -->
-        <x-auth-session-status class="text-center" :status="session('status')" />
+    @if (session('status'))
+        <p class="auth-status" role="status">{{ session('status') }}</p>
+    @endif
 
-        <form method="POST" action="{{ route('login.store') }}" class="flex flex-col gap-6">
-            @csrf
+    <form class="form" method="POST" action="{{ route('login.store') }}" novalidate>
+        @csrf
 
-            <!-- Email Address -->
-            <flux:input
-                name="email"
-                :label="__('Email address')"
-                :value="old('email')"
-                type="email"
-                required
-                autofocus
-                autocomplete="email"
-                placeholder="email@example.com"
-            />
+        <div class="field">
+            <label for="email">Email</label>
+            <input class="input" id="email" name="email" type="email" value="{{ old('email') }}"
+                   required autofocus autocomplete="email" placeholder="nama@email.com"
+                   @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
+            @error('email')
+                <p class="field-error" id="email-error">{{ $message }}</p>
+            @enderror
+        </div>
 
-            <!-- Password -->
-            <div class="relative">
-                <flux:input
-                    name="password"
-                    :label="__('Password')"
-                    type="password"
-                    required
-                    autocomplete="current-password"
-                    :placeholder="__('Password')"
-                    viewable
-                />
-
+        <div class="field">
+            <div class="field-top">
+                <label for="password">Kata sandi</label>
                 @if (Route::has('password.request'))
-                    <flux:link class="absolute top-0 text-sm end-0" :href="route('password.request')" wire:navigate>
-                        {{ __('Forgot your password?') }}
-                    </flux:link>
+                    <a href="{{ route('password.request') }}">Lupa kata sandi?</a>
                 @endif
             </div>
-
-            <!-- Remember Me -->
-            <flux:checkbox name="remember" :label="__('Remember me')" :checked="old('remember')" />
-
-            <div class="flex items-center justify-end">
-                <flux:button variant="primary" type="submit" class="w-full" data-test="login-button">
-                    {{ __('Log in') }}
-                </flux:button>
+            <div class="input-row">
+                <input class="input" id="password" name="password" type="password"
+                       required autocomplete="current-password" placeholder="Kata sandi"
+                       @error('password') aria-invalid="true" aria-describedby="password-error" @enderror>
+                <button class="toggle-pw" type="button" data-toggle-password="password" aria-pressed="false">Tampilkan</button>
             </div>
-        </form>
+            @error('password')
+                <p class="field-error" id="password-error">{{ $message }}</p>
+            @enderror
+        </div>
 
-        @if (Route::has('register'))
-            <div class="space-x-1 text-sm text-center rtl:space-x-reverse text-zinc-600 dark:text-zinc-400">
-                <span>{{ __('Don\'t have an account?') }}</span>
-                <flux:link :href="route('register')" wire:navigate>{{ __('Sign up') }}</flux:link>
-            </div>
-        @endif
-    </div>
-</x-layouts.auth>
+        <label class="check">
+            <input type="checkbox" name="remember" value="1" @checked(old('remember'))>
+            Ingat perangkat ini
+        </label>
+
+        <button class="btn btn-accent" type="submit" data-test="login-button">Masuk</button>
+    </form>
+
+    @if (Route::has('register'))
+        <p class="auth-switch">Belum memiliki akun? <a href="{{ route('register') }}">Daftar</a></p>
+    @endif
+</x-layouts.auth.kiln>

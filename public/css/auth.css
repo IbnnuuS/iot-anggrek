@@ -1,0 +1,60 @@
+/* auth · Kiln theme, shares tokens from landing.css */
+
+.auth { --color-error: oklch(75% 0.15 27); }
+
+.auth-grid { display: grid; grid-template-columns: 1fr 1fr; min-height: 100svh; }
+
+/* ---------- left statement panel ---------- */
+.auth-aside { position: relative; display: flex; flex-direction: column; gap: var(--space-lg); padding: var(--space-2xl) var(--gutter); border-right: var(--rule-hair) solid var(--color-rule); overflow: hidden; }
+.auth-claim { font-family: var(--font-display); font-size: var(--text-section); line-height: 1.05; letter-spacing: var(--tracking-display); max-width: 16ch; margin-top: auto; }
+.auth-orchid { width: min(520px, 88%); margin: 0 0 calc(var(--space-2xl) * -1) auto; opacity: 0.92; }
+
+/* ---------- right form column ---------- */
+.auth-main { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: var(--space-xl); padding: var(--space-2xl) var(--gutter); }
+.auth-card { width: 100%; max-width: 26rem; display: flex; flex-direction: column; gap: var(--space-lg); }
+.auth-back { width: 100%; max-width: 26rem; font-size: var(--text-sm); color: var(--color-ink-2); text-decoration: none; }
+.auth-back:hover { color: var(--color-ink); }
+
+.auth-title { font-family: var(--font-display); font-size: var(--text-3xl); letter-spacing: var(--tracking-display); line-height: 1.1; margin: 0; }
+.auth-sub { margin: var(--space-xs) 0 0; font-size: var(--text-sm); color: var(--color-ink-2); }
+
+/* ---------- form ---------- */
+.form { display: flex; flex-direction: column; gap: var(--space-lg); }
+.field { display: flex; flex-direction: column; gap: var(--space-2xs); }
+.field label { font-size: var(--text-sm); color: var(--color-ink-2); }
+.field-top { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-sm); }
+.field-top a { font-size: var(--text-xs); color: var(--color-ink-2); text-decoration: none; }
+.field-top a:hover { color: var(--color-ink); text-decoration: underline; }
+
+.input-row { position: relative; display: flex; }
+.input { width: 100%; min-height: 48px; padding: 0 var(--space-md); border-radius: 12px; border: var(--rule-hair) solid color-mix(in oklab, var(--color-muted) 40%, transparent); background: var(--color-paper-2); color: var(--color-ink); font-family: var(--font-body); font-size: var(--text-md); transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
+.input::placeholder { color: color-mix(in oklab, var(--color-muted) 80%, transparent); }
+.input:hover { border-color: var(--color-muted); }
+.input:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 1px; border-color: transparent; }
+.input[aria-invalid="true"] { border-color: var(--color-error); }
+.input-row .input { padding-right: 7.5rem; }
+.toggle-pw { position: absolute; top: 50%; right: var(--space-xs); transform: translateY(-50%); min-height: 36px; padding: 0 var(--space-sm); border: 0; border-radius: 8px; background: transparent; color: var(--color-ink-2); font-size: var(--text-xs); cursor: pointer; }
+.toggle-pw:hover { color: var(--color-ink); background: var(--color-paper-3); }
+.toggle-pw:focus-visible { outline: 2px solid var(--color-focus); }
+
+.hint { font-size: var(--text-xs); color: var(--color-ink-2); }
+.field-error { margin: var(--space-2xs) 0 0; font-size: var(--text-xs); color: var(--color-error); }
+
+.check { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--text-sm); color: var(--color-ink-2); }
+.check input { width: 20px; height: 20px; accent-color: var(--color-accent); }
+
+.form .btn { width: 100%; min-height: 52px; }
+.auth-status { padding: var(--space-sm) var(--space-md); border-radius: 12px; border: var(--rule-hair) solid color-mix(in oklab, var(--color-muted) 40%, transparent); background: var(--color-paper-2); font-size: var(--text-sm); color: var(--color-ink-2); }
+
+.auth-switch { font-size: var(--text-sm); color: var(--color-ink-2); }
+.auth-switch a { color: var(--color-ink); }
+
+/* ---------- phone ---------- */
+@media (max-width: 60rem) {
+  .auth-grid { grid-template-columns: 1fr; }
+  .auth-aside { border-right: 0; border-bottom: var(--rule-hair) solid var(--color-rule); padding: var(--space-md) var(--gutter); gap: 0; }
+  .auth-claim { display: none; }
+  .auth-orchid { display: none; }
+  .auth-main { justify-content: flex-start; gap: var(--space-lg); padding: var(--space-lg) var(--gutter) var(--space-xl); }
+  .auth-back { margin-top: auto; }
+}
